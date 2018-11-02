@@ -122,7 +122,7 @@
     $('.state-main').css('display', 'none');
     $('.stateTable-container').css('display', 'none');
     $('.loader').css('display', 'none');
-    $('.state-table').css('display', 'none');
+    $('.exp-table').css('display', 'none');
   }
 
   function change2State() {
@@ -130,6 +130,7 @@
     $('.loader').css('display', 'none');
     $('.exp-table').css('display', 'none');
     $('.state-main').css('display', 'block');
+    $('.state-table').css('display', 'none');
   }
 
   function handleStateInput() {
@@ -165,15 +166,30 @@
     $('.state-table').css('display', 'block');
     console.log(data)
     
-    $.ajax({
-      type: 'POST',
-      url: 'http://tomax.xin/farexp/convert/fa2reg',
-      data: {'fa': data},
-      success: function(res) {
-        console.log(res)
-      }
-    })
-    let res = {"stateNum":4,"charList":"a,b","origin":0,"end":[3,4],"stateTable":[["1","2"],["3","1"],["4","3"],["2","4"]]};
+    // $.ajax({
+    //   method: 'POST',
+    //   url: 'http://tomax.xin/farexp/convert/fa2reg',
+    //   data: {'fa': JSON.stringify(data)},
+    //   dataType:'json',
+    //   success: function(res) {
+    //     console.log(res)
+    //     if(res.code !== 200) {
+    //       alert(res.msg)
+    //     } else {
+
+    //     }
+    //   },
+    //   error: function(err) {
+    //     console.log(err)
+    //   }
+    // })
+
+    $.post("http://tomax.xin/farexp/convert/fa2reg",{"fa": JSON.stringify(data)},
+    function(data){
+      console.log(data); //  2pm
+    }, "json");
+
+    // let res = {"stateNum":4,"charList":"a,b","origin":0,"end":[3,4],"stateTable":[["1","2"],["3","1"],["4","3"],["2","4"]]};
     getRes(res);
   }
 
@@ -204,14 +220,38 @@
         `
       )
     }
+
+    $('.state-table').append(
+      `
+        <p>初始态: ${res.origin}</p>
+        <p>终止态: ${[1,2]}</p>
+      `
+    )
   }
 
   function submitNfa() {
     let data = {};
     data.expr = $('#exp').val();
     // $('.loader').css('display', 'block');
-    $('.exp-table').css('display', 'block');
-    $('.exp-table-area').val('aaa')
+    
+    $.ajax({
+      method: 'POST',
+      url: 'http://tomax.xin/farexp/convert/reg2fa',
+      data: {'regex': data.expr},
+      success: function(res) {
+        console.log(res)
+        if(res.code !== 200) {
+          alert(res.msg)
+        } else {
+          getRes(res.data);
+          $('.state-table').css('display', 'block');
+        }
+      },
+      error: function(err) {
+        console.log(err)
+      }
+    })
+
     console.log(data);
   }
 </script>
