@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Exp2Nfa</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style>
+    html, body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #eee;
+    }
+    .stateTable-container {
+      display: none;
+      margin-left: 30px;
+    }
+    .state {
+      margin: 10px 0;
+    }
+    .state-main {
+      width: 240px;
+    }
+    .state-table {
+      display: none;
+      margin-left: 30px;
+    }
+    .exp-table {
+      display: none;
+      margin-left: 30px;
+    }
+    th {
+      width: 50px;
+    }
+    .nfa-main {
+      width: 240px;
+      display: none;
+    }
+    .loader{
+      margin-left: 30px;
+      width: 20%;
+      text-align: center;
+      padding: 1em;
+      display: none;
+      vertical-align: top;
+    }
+    svg path,
+    svg rect{
+      fill: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="nfa-main">
+    <div class="form-group">
+      <label for="exp">正规式</label>
+      <input class="form-control" id="exp" placeholder="正规式">
+    </div>
+    <button onclick="change2State()" class="btn btn-danger">NFA转正规式</button>
+    <button onclick="submitNfa()" class="btn btn-success">计算</button>
+  </div>
+  <div class="state-main">
+    <div class="form-group">
+      <label for="stateNum">状态数</label>
+      <input type="number" class="form-control" id="stateNum" placeholder="状态数">
+    </div>
+    <div class="form-group">
+      <label for="charList">字符集</label>
+      <input class="form-control" id="charList" placeholder="字符集">
+    </div>
+    <div class="form-group">
+      <label for="origin">起始状态</label>
+      <input type="number" class="form-control" id="origin" placeholder="起始状态">
+    </div>
+    <div class="form-group">
+      <label for="end">终结状态集</label>
+      <input type="number" class="form-control" id="end" placeholder="终结状态集">
+    </div>
+    <button onclick="change2Nfa()" class="btn btn-danger">正规式转NFA</button>
+    <button onclick="handleStateInput()" class="btn btn-primary">填写状态表</button>
+  </div>
+  <div class="stateTable-container">
+    <div id="stateTable"></div>
+    <button onclick="submitSta()" class="btn btn-success">计算</button>
+  </div>
+  <div class="loader" title="0">
+    <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+      width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+    <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
+      s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634
+      c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/>
+    <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0
+      C22.32,8.481,24.301,9.057,26.013,10.047z">
+      <animateTransform attributeType="xml"
+        attributeName="transform"
+        type="rotate"
+        from="0 20 20"
+        to="360 20 20"
+        dur="0.5s"
+        repeatCount="indefinite"/>
+      </path>
+    </svg>
+  </div>
+  <div class="state-table">
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr class="state-table-head">
+          <th>#</th>
+        </tr>
+      </thead>
+      <tbody class="state-table-body">
+      </tbody>
+    </table>
+  </div>
+  <div class="exp-table">
+    <textarea class="form-control exp-table-area" rows="5" cols="20"></textarea>
+  </div>
+</body>
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script>
+
+  function change2Nfa() {
+    $('.nfa-main').css('display', 'block');
+    $('.state-main').css('display', 'none');
+    $('.stateTable-container').css('display', 'none');
+    $('.loader').css('display', 'none');
+    $('.state-table').css('display', 'none');
+  }
+
+  function change2State() {
+    $('.nfa-main').css('display', 'none');
+    $('.loader').css('display', 'none');
+    $('.exp-table').css('display', 'none');
+    $('.state-main').css('display', 'block');
+  }
+
+  function handleStateInput() {
+    let num = $('#stateNum').val();
+    let length = $('#charList').val().length;
+    
+    $('#stateTable').empty();
+    for(let i = 0 ; i < num ; i++) {
+      $('#stateTable').append(
+        `<input class="form-control state state${i}" placeholder="状态表" maxlength='${length}'>`
+      )
+    }
+
+    $('.stateTable-container').css('display', 'block');
+  }
+
+  function submitSta() {
+    let data = {};
+    data.stateNum = $('#stateNum').val();
+    data.charList = $('#charList').val().split('').join(',');
+    data.origin = $('#origin').val();
+    data.end = $('#end').val().split('');
+
+    let stateArr = [];
+
+    for(let i = 0 ; i < data.stateNum; i++) {
+      stateArr.push($(`.state${i}`).val().split(''));
+    }
+
+    data.stateTable = stateArr;
+    
+    // $('.loader').css('display', 'block');
+    $('.state-table').css('display', 'block');
+    console.log(data)
+    
+    $.ajax({
+      type: 'POST',
+      url: 'http://tomax.xin/farexp/convert/fa2reg',
+      data: {'fa': data},
+      success: function(res) {
+        console.log(res)
+      }
+    })
+    let res = {"stateNum":4,"charList":"a,b","origin":0,"end":[3,4],"stateTable":[["1","2"],["3","1"],["4","3"],["2","4"]]};
+    getRes(res);
+  }
+
+  function getRes(res) {
+    let stateNum = res.stateNum;
+    let charArr = res.charList.split(',');
+    let length = charArr.join('').length;
+    let stateTable = res.stateTable;
+
+    for(let i = 0 ; i < length ; i++) {
+      $('.state-table-head').append(
+        `<th>${charArr[i]}</th>`
+      )
+    }
+
+    for(let i = 0 ; i < stateNum ; i++) {
+      let thStr = ''
+      stateTable[i].forEach(function(item) {
+        thStr += `<td>${item}</td>`
+      })
+
+      $('.state-table-body').append(
+        `
+        <tr>
+          <th scope="row">${i}</th>
+          ${thStr}
+        </tr>
+        `
+      )
+    }
+  }
+
+  function submitNfa() {
+    let data = {};
+    data.expr = $('#exp').val();
+    // $('.loader').css('display', 'block');
+    $('.exp-table').css('display', 'block');
+    $('.exp-table-area').val('aaa')
+    console.log(data);
+  }
+</script>
+</html>
